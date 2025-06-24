@@ -1,0 +1,11 @@
+# This file uses MiniMessage for formatting. You can find the documentation here: https://docs.advntr.dev/minimessage/format.html
+# Explanation of each key is available in the wiki: https://github.com/Kebluk-SoF-2025/TideFly/wiki
+
+reloading: "<grey>Reloading Tidefly..."
+reloaded: "<green>Tidefly reloaded successfully!"
+
+no-permission: "<red>You do not have permission to perform this action."
+
+
+# !!! DO NOT TOUCH THIS !!! #
+version: 1

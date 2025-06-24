@@ -1,0 +1,6 @@
+name: Tidefly
+main: me.kebluk.tidefly.TideFly
+version: "$version"
+description: Flight management plugin for Paper servers.
+author: Kebluk
+api-version: "$apiVersion"

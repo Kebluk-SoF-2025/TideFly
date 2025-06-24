@@ -1,0 +1,6 @@
+### IDEA and Gradle
+.gradle
+build/
+.idea
+out/
+.iml

@@ -5,7 +5,7 @@ plugins {
 group = "me.kebluk.tidefly"
 version = "1.0.0"
 
-val apiVersion ="1.21"
+val apiVersion = "1.21"
 
 repositories {
     mavenCentral()
@@ -18,8 +18,10 @@ dependencies {
 
 tasks.processResources {
     filesMatching(listOf("plugin.yml", "paper-plugin.yml")) {
-        expand("version" to version,
-            "apiVersion" to apiVersion)
+        expand(
+            "version" to version,
+            "apiVersion" to apiVersion
+        )
     }
 }
 

@@ -3,6 +3,6 @@
 build/
 .idea
 out/
-.iml
 
-TODO.md
+.iml
+todo.md

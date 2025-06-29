@@ -16,12 +16,29 @@
 
 package me.kebluk.tidefly;
 
+import me.kebluk.tidefly.config.ConfigManager;
+import me.kebluk.tidefly.config.LocaleConfig;
+import me.kebluk.tidefly.config.MainConfig;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Locale;
 
 public class TideFly extends JavaPlugin {
+    private ConfigManager configManager;
+
+    public static TideFly getInst() {
+        return getPlugin(TideFly.class);
+    }
+
     @Override
     public void onLoad() {
         getLogger().info("TideFly is loading...");
+
+        // Initialize configuration and locale
+        configManager = new ConfigManager(this);
+        configManager.loadConfigs();
     }
 
     @Override
@@ -32,5 +49,26 @@ public class TideFly extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("TideFly has been disabled!");
+    }
+
+    public @NotNull MainConfig getMainConfig() {
+        return configManager.getMainConfig();
+    }
+
+    public LocaleConfig getLocale() {
+        return configManager.getLocale(getMainConfig().lang());
+    }
+
+    public LocaleConfig getLocale(String locale) {
+        return configManager.getLocale(locale);
+    }
+
+    public LocaleConfig getLocale(Player player) {
+        if (!getMainConfig().localization()) {
+            return getLocale();
+        }
+
+        Locale playerLocale = player.locale();
+        return (playerLocale.hasExtensions() ? getLocale(playerLocale.toString()) : getLocale());
     }
 }

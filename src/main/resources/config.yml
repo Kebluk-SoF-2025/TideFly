@@ -17,23 +17,30 @@
 
 
 # +------------------------------------------------------+ #
+# |               General Configuration                  | #
+# +------------------------------------------------------+ #
+
+general:
+  # Make sure that the name of the language file matches that you put here.
+  lang: en_US
+
+  # If this is true, TideFly will try to use the player's language. The lang specified upper will be used for fallback.
+  # Make sure that the language file exists in the "lang" folder.
+  localization: true
+
+
+# +------------------------------------------------------+ #
 # |               Storage Configuration                  | #
 # +------------------------------------------------------+ #
 
 storage:
   # The storage type to use. Options:
-  # Remote databases:
-  #  - MySQL
-  #  - MariaDB
-  #  - PostgreSQL
-  #  - MongoDB
-  # Local Storage:
-  #  - SQLite
-  #  - JSON
+  #  - Remote databases: MySQL, MariaDB, PostgreSQL, MongoDB
+  #  - Local Storage: SQLite, JSON
   type: json
 
-  # MySQL configuration
-  mysql:
+  # Remote storage configuration
+  remote:
     # The default port will be used if not specified. (3306 for MySQL/MariaDB, 5432 for PostgreSQL, 27017 for MongoDB)
     # If you want to use a different port, specify it in "host:port" format.
     host: localhost
@@ -41,10 +48,20 @@ storage:
     username: root
     password: ''
 
-  # SQLite configuration
-  sqlite:
-    file: data/tidefly.db
+  # Local storage configuration
+  local:
+    file: data/tidefly.json
 
+
+# +------------------------------------------------------+ #
+# |              Messaging Configuration                 | #
+# +------------------------------------------------------+ #
+
+messaging:
+  # The cross-server messaging system to use. Options:
+  #  - SQL (for MySQL, MariaDB)
+  #  - Redis
+  type: redis
 
 # !!! DO NOT TOUCH THIS !!! #
 version: 1

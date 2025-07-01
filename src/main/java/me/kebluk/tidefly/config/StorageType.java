@@ -33,13 +33,13 @@ public enum StorageType {
     private final String value;
     private final int defaultPort;
 
-    StorageType(String value, int defaultPort) {
+    StorageType(final String value, final int defaultPort) {
         this.value = value;
         this.defaultPort = defaultPort;
     }
 
-    public static StorageType fromValue(String value) {
-        for (StorageType type : values()) {
+    public static StorageType fromValue(final String value) {
+        for (final StorageType type : values()) {
             if (type.value.equalsIgnoreCase(value)) {
                 return type;
             }

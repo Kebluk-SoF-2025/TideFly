@@ -33,7 +33,7 @@ flexible controls and network-wide data storage.
 1. Download the latest release from [Releases](https://github.com/Kebluk-SoF-2025/TideFly/releases/latest).
 2. Place the downloaded `.jar` file into your server's `plugins` folder.
 3. Restart your server.
-4. Configure it using `config.yml` and `messages.yml` for messages in the plugin's folder.
+4. Configure the plugin using `config.yml` and language files (such as `en_US.yml`) for messages in the plugin's folder.
 5. Visit the [Wiki](https://github.com/Kebluk-SoF-2025/TideFly/wiki) for more detailed setup instructions and
    configuration options.
 

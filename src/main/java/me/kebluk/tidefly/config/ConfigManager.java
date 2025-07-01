@@ -19,18 +19,18 @@ package me.kebluk.tidefly.config;
 import me.kebluk.tidefly.TideFly;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
- * The ConfigManager class is responsible for managing the configuration files
+ * The {@link ConfigManager} class is responsible for managing the configuration files
  * for the TideFly plugin. This includes loading, updating, and validating configuration
  * files and locale files. The class ensures that the necessary defaults are extracted
  * and keeps the configuration files up to date with the latest structure.
@@ -38,14 +38,16 @@ import java.util.Objects;
 public class ConfigManager {
     private final TideFly plugin;
     private final Map<String, LocaleConfig> locales = new HashMap<>();
-    private final String MAIN_CONFIG_PATH = "config.yml";
-    private final String LOCALE_CONFIG_DIR = "locale";
+    private final Path MAIN_CONFIG_PATH;
+    private final Path LOCALE_CONFIG_PATH;
     private final int MAIN_CONFIG_VERSION = 1;
     private final int LOCALE_CONFIG_VERSION = 1;
     private MainConfig mainConfig;
 
-    public ConfigManager(TideFly plugin) {
+    public ConfigManager(final TideFly plugin) {
         this.plugin = plugin;
+        MAIN_CONFIG_PATH = plugin.getDataPath().resolve("config.yml");
+        LOCALE_CONFIG_PATH = plugin.getDataPath().resolve("locale");
     }
 
     public void loadConfigs() {
@@ -59,27 +61,19 @@ public class ConfigManager {
      * <p>
      * The method validates the configuration file's version, logs appropriate messages, and updates it
      * if necessary. It parses all the settings from the configuration file to populate a {@link MainConfig} instance.
-     * <p>
      *
      * @throws RuntimeException         If the plugin folder cannot be created, or if the default configuration file cannot be extracted.
      * @throws NullPointerException     If required configuration fields are missing.
      * @throws IllegalArgumentException If an invalid storage type is specified.
      */
     public void loadMainConfig() {
-        File mainConfigFile = new File(plugin.getDataFolder(), MAIN_CONFIG_PATH);
-        if (!mainConfigFile.exists()) {
-            plugin.getSLF4JLogger().info("Main config file not found, extracting default...");
-            if (!mainConfigFile.mkdirs()) {
-                throw new RuntimeException("Failed to create plugin folder.");
-            }
-            extractResource(MAIN_CONFIG_PATH);
-        }
+        ensureExists(MAIN_CONFIG_PATH);
 
-        YamlConfiguration yml = YamlConfiguration.loadConfiguration(mainConfigFile);
-        checkConfigVersion(yml, mainConfigFile.getPath(), MAIN_CONFIG_VERSION);
+        final YamlConfiguration yml = YamlConfiguration.loadConfiguration(MAIN_CONFIG_PATH.toFile());
+        checkConfigVersion(yml, MAIN_CONFIG_PATH, MAIN_CONFIG_VERSION);
 
-        String typeStr = Objects.requireNonNull(yml.getString("storage.type"));
-        StorageType type = StorageType.fromValue(typeStr);
+        final String typeStr = Objects.requireNonNull(yml.getString("storage.type"));
+        final StorageType type = StorageType.fromValue(typeStr);
         String host = Objects.requireNonNull(yml.getString("storage.remote.host"));
 
         if (type.isRemote() && !host.contains(":")) {
@@ -91,69 +85,64 @@ public class ConfigManager {
                 typeStr, host, yml.getString("storage.remote.database"), yml.getString("storage.remote.username"), yml.getString("storage.remote.password"), yml.getString("storage.local.file"),
 
                 yml.getString("messaging.type"));
+
         plugin.getSLF4JLogger().info("Loaded main config: {}", MAIN_CONFIG_PATH);
     }
 
     /**
-     * Loads a locale configuration from the specified file.
+     * Loads a locale configuration from the specified path.
      * This method extracts the locale name from the file name, validates the configuration's version,
      * and stores the locale-specific messages in the {@link #locales} map.
      *
-     * @param file The file containing the locale configuration in YAML format.
+     * @param path The path of a file containing the locale configuration in YAML format.
      */
-    public void loadLocale(File file) {
-        String localeName = file.getName().replace(".yml", "");
-        YamlConfiguration yml = YamlConfiguration.loadConfiguration(file);
-        checkConfigVersion(yml, file.getPath(), LOCALE_CONFIG_VERSION);
-        locales.put(localeName, new LocaleConfig(yml.getString("reloading"), yml.getString("reloaded"), yml.getString("noPermission")));
+    public void loadLocale(final Path path) {
+        final String localeName = path.getFileName().toString().replace(".yml", "");
+        final YamlConfiguration yml = YamlConfiguration.loadConfiguration(path.toFile());
+        checkConfigVersion(yml, path, LOCALE_CONFIG_VERSION);
+        locales.put(localeName, new LocaleConfig(yml.getString("reloading"), yml.getString("reloaded"), yml.getString("no-permission")));
     }
 
     /**
-     * Loads all locale configuration files from the locale directory of the plugin's data folder.
+     * Loads all locale configuration files from the locale path.
      * If the locale directory does not exist, it will create the directory and extract a default
      * locale file from the plugin's resources.
      * <p>
      * This method searches for all files with a `.yml` extension in the locale directory and
-     * processes them in parallel using {@link #loadLocale(File)}. Validated locale configurations are
+     * processes them in parallel using {@link #loadLocale(Path)}. Validated locale configurations are
      * added to the {@link #locales} map. Logs will indicate the success or failure of these actions.
      *
      * @throws RuntimeException If the locale directory cannot be created.
      */
     public void loadLocales() {
-        File localePath = new File(plugin.getDataFolder(), LOCALE_CONFIG_DIR);
-        if (!localePath.exists()) {
-            plugin.getSLF4JLogger().info("Locale directory not found, creating it and extracting default locale...");
-            if (!localePath.mkdirs()) {
-                throw new RuntimeException("Failed to create path for locale files: " + LOCALE_CONFIG_DIR);
-            }
-            extractResource(LOCALE_CONFIG_DIR + "/en_US.yml");
-        }
+        ensureExists(LOCALE_CONFIG_PATH.resolve("en_US.yml"));
 
-        File[] localeFiles = localePath.listFiles((dir, name) -> name.endsWith(".yml"));
-
-        if (localeFiles == null) {
-            plugin.getSLF4JLogger().warn("No locale files found in directory: {}", LOCALE_CONFIG_DIR);
+        try (final Stream<Path> stream = Files.list(LOCALE_CONFIG_PATH)) {
+            // Load all locale files in parallel
+            stream.filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".yml"))
+                    .parallel()
+                    .forEach(this::loadLocale);
+        } catch (final Exception e) {
+            plugin.getSLF4JLogger().warn("No locale files found in directory: {}", LOCALE_CONFIG_PATH);
             return;
         }
-
-        // Load all locale files in parallel
-        Arrays.stream(localeFiles).parallel().forEach(this::loadLocale);
 
         plugin.getSLF4JLogger().info("Loaded locales: {}", String.join(", ", locales.keySet()));
     }
 
     /**
-     * Retrieves a resource file as an InputStream from the plugin's JAR.
-     * If the specified resource cannot be found, a RuntimeException is thrown.
+     * Retrieves a resource file as an {@link InputStream} from the plugin's JAR.
+     * If the specified resource cannot be found, a {@link RuntimeException} is thrown.
      *
      * @param resourcePath The path to the resource file within the plugin JAR.
      *                     This can be a relative or full path.
-     * @return An InputStream for the specified resource.
+     * @return An {@link InputStream} for the specified resource.
      * @throws RuntimeException if the specified resource is not found within the JAR.
      */
-    private InputStream getResource(String resourcePath) {
-        String fileName = resourcePath.contains("/") ? resourcePath.substring(resourcePath.lastIndexOf('/') + 1) : resourcePath;
-        InputStream input = plugin.getClass().getResourceAsStream(fileName);
+    private InputStream getResource(final Path resourcePath) {
+        final String fileName = resourcePath.getFileName().toString();
+        final InputStream input = plugin.getResource(fileName);
 
         if (input == null) {
             throw new RuntimeException("Default resource file '" + resourcePath + "' not found in JAR.");
@@ -167,25 +156,50 @@ public class ConfigManager {
      * If the file does not exist, it is copied from the JAR to the data folder.
      * This ensures that default configuration or localization files are available.
      *
-     * @param resourcePath The relative path to the resource file within the plugin JAR.
-     *                     The file will be extracted to the plugin's data folder,
-     *                     preserving the relative path structure.
+     * @param destinationPath The relative path to the resource file within the plugin JAR.
+     *                        The file will be extracted to the plugin's data folder,
+     *                        preserving the relative path structure.
      * @throws RuntimeException If any error occurs while extracting the resource,
      *                          such as missing resources in the JAR or issues with file operations.
      */
-    private void extractResource(String resourcePath) {
-        Path destinationPath = plugin.getDataFolder().toPath().resolve(resourcePath);
-
+    private void extractResource(final Path destinationPath) {
         if (Files.exists(destinationPath)) {
             return;
         }
 
-        try (InputStream input = getResource(resourcePath)) {
+        try (final InputStream input = getResource(destinationPath)) {
             Files.createDirectories(destinationPath.getParent()); // Ensure directory exists
-            Files.copy(input, destinationPath);
-            plugin.getSLF4JLogger().info("Successfully extracted default resource '{}'.", resourcePath);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to extract default resource '" + resourcePath + "'.", e);
+            Files.copy(input, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+            plugin.getSLF4JLogger().info("Successfully extracted default resource '{}'.", destinationPath);
+        } catch (final Exception e) {
+            throw new RuntimeException("Failed to extract default resource '" + destinationPath + "'.", e);
+        }
+    }
+
+    /**
+     * Ensures the specified file exists at the given path. If the file does not exist,
+     * this method attempts to create the necessary parent directories and extracts
+     * the default resource to the specified path. If the file already exists, the method
+     * logs a message and skips extraction.
+     *
+     * @param path The path to the file that should be checked and potentially created.
+     *             This path represents the target location where the default resource
+     *             will be extracted, if the file is missing.
+     * @throws RuntimeException If the parent directories cannot be created or if the
+     *                          default resource cannot be extracted to the specified
+     *                          path.
+     */
+    private void ensureExists(final Path path) {
+        if (!Files.exists(path)) {
+            plugin.getSLF4JLogger().info("File '{}' does not exist, extracting default...", path);
+            try {
+                Files.createDirectories(path.getParent());
+            } catch (final Exception e) {
+                throw new RuntimeException("Failed to create necessary directories.");
+            }
+            extractResource(path);
+        } else {
+            plugin.getSLF4JLogger().info("File '{}' already exists, skipping extraction.", path);
         }
     }
 
@@ -195,12 +209,12 @@ public class ConfigManager {
      * outdated, or newer than expected.
      * Updates the configuration file to ensure it has the latest version and structure.
      *
-     * @param yml             The YamlConfiguration object representing the configuration file.
+     * @param yml             The {@link YamlConfiguration} object representing the configuration file.
      * @param filePath        The path to the configuration file being checked.
      * @param expectedVersion The expected version number of the configuration file.
      */
-    private void checkConfigVersion(YamlConfiguration yml, String filePath, int expectedVersion) {
-        int version = yml.getInt("version", 0);
+    private void checkConfigVersion(final YamlConfiguration yml, final Path filePath, final int expectedVersion) {
+        final int version = yml.getInt("version", 0);
         if (version < expectedVersion) {
             plugin.getSLF4JLogger().info("Configuration file '{}' is outdated (version: {}; expected version: {}).", filePath, version, expectedVersion);
         } else if (version > expectedVersion) {
@@ -223,34 +237,34 @@ public class ConfigManager {
      * @throws RuntimeException If a backup cannot be created, the default configuration cannot be loaded, or if
      *                          an error occurs during the update process.
      */
-    private void update(YamlConfiguration yml, String filePath) {
+    private void update(YamlConfiguration yml, final Path filePath) {
         plugin.getSLF4JLogger().info("Automatically updating configuration file '{}' for possible older version or missing values.", filePath);
 
         //Make a backup of the original file
-        File configFile = new File(plugin.getDataFolder(), filePath);
-        File backupFile = new File(plugin.getDataFolder(), filePath + ".bak");
-        if (configFile.exists() && !backupFile.exists()) {
+        final Path backupPath = filePath.resolveSibling(filePath.getFileName() + ".bak");
+
+        if (Files.exists(filePath) && !Files.exists(backupPath)) {
             try {
-                Files.copy(configFile.toPath(), backupFile.toPath());
-                plugin.getSLF4JLogger().info("Backup of configuration file '{}' created as '{}'.", filePath, backupFile.getName());
-            } catch (Exception e) {
+                Files.copy(filePath, backupPath, StandardCopyOption.REPLACE_EXISTING);
+                plugin.getSLF4JLogger().info("Backup of configuration file '{}' created as '{}'.", filePath, backupPath.getFileName());
+            } catch (final Exception e) {
                 throw new RuntimeException("Failed to create backup of configuration file '" + filePath + "' and thus an update task: {}", e);
             }
         }
 
         // Determine the default file name based on the file path
         // If the file is a locale file, use the en_US locale file name; otherwise, use the main config file name
-        String fileName = filePath.contains(LOCALE_CONFIG_DIR + "/") ? "en_US.yml" : MAIN_CONFIG_PATH;
+        final Path fileName = filePath.toString().contains(LOCALE_CONFIG_PATH.toString()) ? Path.of("en_US.yml") : MAIN_CONFIG_PATH.getFileName();
 
-        YamlConfiguration defaultYml = new YamlConfiguration();
-        try (InputStream input = getResource(fileName)) {
+        final YamlConfiguration defaultYml = new YamlConfiguration();
+        try (final InputStream input = getResource(fileName)) {
             defaultYml.options().parseComments(true);
             defaultYml.load(new InputStreamReader(input));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Failed to load default resource '" + fileName + "'.", e);
         }
 
-        for (String key : defaultYml.getKeys(true)) {
+        for (final String key : defaultYml.getKeys(true)) {
             if (yml.contains(key)) {
                 defaultYml.set(key, yml.get(key));
             }
@@ -260,10 +274,10 @@ public class ConfigManager {
         yml = defaultYml;
 
         try {
-            yml.save(new File(plugin.getDataFolder(), filePath));
+            yml.save(filePath.toFile());
             plugin.getSLF4JLogger().info("Successfully updated and saved configuration file '{}'. Deleting backup.", filePath);
-            Files.deleteIfExists(backupFile.toPath());
-        } catch (Exception e) {
+            Files.deleteIfExists(backupPath);
+        } catch (final Exception e) {
             plugin.getSLF4JLogger().error("Failed to save updated configuration file '{}': {}", filePath, e.getMessage());
         }
     }
@@ -272,7 +286,7 @@ public class ConfigManager {
         return mainConfig;
     }
 
-    public LocaleConfig getLocale(String locale) {
+    public LocaleConfig getLocale(final String locale) {
         return locales.getOrDefault(locale, locales.get(mainConfig.lang()));
     }
 }

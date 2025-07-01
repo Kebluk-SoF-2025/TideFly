@@ -100,7 +100,7 @@ public class ConfigManager {
         final String localeName = path.getFileName().toString().replace(".yml", "");
         final YamlConfiguration yml = YamlConfiguration.loadConfiguration(path.toFile());
         checkConfigVersion(yml, path, LOCALE_CONFIG_VERSION);
-        locales.put(localeName, new LocaleConfig(yml.getString("reloading"), yml.getString("reloaded"), yml.getString("no-permission")));
+        locales.put(localeName, new LocaleConfig(yml.getString("reloading"), yml.getString("reloaded"), yml.getString("no-permission"), yml.getString("player-only")));
     }
 
     /**

@@ -16,5 +16,8 @@
 
 package me.kebluk.tidefly.config;
 
-public record LocaleConfig(String reloading, String reloaded, String noPermission, String playerOnly) {
+public record LocaleConfig(String reloading, String reloaded, String noPermission, String playerOnly,
+
+                           String flyEnabled, String flyDisabled, String flyEnabledOther, String flyDisabledOther,
+                           String flyAlreadyEnabled, String flyAlreadyDisabled) {
 }

@@ -25,7 +25,7 @@ import java.util.Arrays;
 public enum StorageType {
     MYSQL("mysql", 3306),
     MARIADB("mariadb", 3306),
-    POSTGRESQL("postrgresql", 5432),
+    POSTGRESQL("postgresql", 5432),
     MONGODB("mongodb", 27017),
     SQLITE("sqlite", 0),
     JSON("json", 0);

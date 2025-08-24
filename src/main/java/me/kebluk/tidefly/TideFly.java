@@ -16,6 +16,8 @@
 
 package me.kebluk.tidefly;
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import me.kebluk.tidefly.commands.FlyCommand;
 import me.kebluk.tidefly.config.ConfigManager;
 import me.kebluk.tidefly.config.LocaleConfig;
 import me.kebluk.tidefly.config.MainConfig;
@@ -38,14 +40,25 @@ public class TideFly extends JavaPlugin {
         getLogger().info("TideFly has been loaded!");
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void onEnable() {
+        // Register commands
+        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(FlyCommand.create(), getMainConfig().commandAliases());
+        });
+        getLogger().info("Successfully registered commands!");
+
         getLogger().info("TideFly has been enabled!");
     }
 
     @Override
     public void onDisable() {
         getLogger().info("TideFly has been disabled!");
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
 
     public MainConfig getMainConfig() {

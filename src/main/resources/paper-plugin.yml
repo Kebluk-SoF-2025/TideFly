@@ -4,3 +4,105 @@ version: "$version"
 description: Flight management plugin for Paper servers.
 author: Kebluk
 api-version: "$apiVersion"
+
+permissions:
+  tidefly.*:
+    default: op
+    description: All permissions for TideFly.
+    children:
+      tidefly.admin.*: true
+      tidefly.cmd.*: true
+
+  #TideFly Admin Permissions
+  tidefly.admin.*:
+    description: Admin permission for TideFly.
+    children:
+      tidefly.admin: true
+      tidefly.admin.cmd.*: true
+      tidefly.cmd.others: true
+  tidefly.admin.cmd.*:
+    children:
+      tidefly.admin.cmd: true
+      tidefly.admin.cmd.add: true
+      tidefly.admin.cmd.remove: true
+      tidefly.admin.cmd.set: true
+      tidefly.admin.cmd.reset: true
+  tidefly.admin.cmd.add:
+    description: Permission to add fly time to a player.
+  tidefly.admin.cmd.remove:
+    description: Permission to remove fly time from a player.
+  tidefly.admin.cmd.set:
+    description: Permission to set fly time for a player.
+  tidefly.admin.cmd.reset:
+    description: Permission to reset fly time for a player.
+  tidefly.admin.cmd.info:
+    description: Permission to display information about the plugin.
+  tidefly.admin.cmd.reload.*:
+    children:
+      tidefly.admin.cmd.reload: true
+      tidefly.admin.cmd.reload.all: true
+      tidefly.admin.cmd.reload.config: true
+      tidefly.admin.cmd.reload.locale: true
+  tidefly.admin.cmd.reload:
+    description: Permission to reload the plugin configuration.
+  tidefly.admin.cmd.reload.all:
+    description: Permission to reload all plugin configurations.
+  tidefly.admin.cmd.reload.config:
+    description: Permission to reload the main configuration file.
+  tidefly.admin.cmd.reload.locale:
+    description: Permission to reload the language files.
+
+  #TideFly Normal Permissions
+  tidefly.cmd:
+    default: true
+    description: Permission to use /tidefly command.
+  tidefly.cmd.*:
+    children:
+      tidefly.cmd: true
+      tidefly.cmd.on: true
+      tidefly.cmd.off: true
+      tidefly.cmd.toggle: true
+      tidefly.cmd.status: true
+      tidefly.cmd.help: true
+      tidefly.cmd.speed: true
+      tidefly.cmd.pay: true
+  tidefly.cmd.on:
+    description: Permission to enable fly.
+  tidefly.cmd.on.others:
+    description: Permission to enable fly for others.
+  tidefly.cmd.off:
+    description: Permission to disable fly.
+  tidefly.cmd.off.others:
+    description: Permission to disable fly for others.
+  tidefly.cmd.toggle:
+    description: Permission to toggle fly.
+  tidefly.cmd.toggle.others:
+    description: Permission to toggle fly for others.
+  tidefly.cmd.status:
+    description: Permission to view fly status.
+  tidefly.cmd.status.others:
+    description: Permission to view fly status for others.
+  tidefly.cmd.help:
+    description: Permission to view command help.
+  tidefly.cmd.help.others:
+    description: Permission to view command help for others.
+  tidefly.cmd.speed:
+    description: Permission to change fly speed.
+  tidefly.cmd.speed.others:
+    description: Permission to change fly speed for others.
+  tidefly.cmd.pay:
+    description: Permission to pay fly time to another player.
+  tidefly.cmd.pay.others:
+    description: Permission to pay fly time to another player for others.
+  tidefly.cmd.others: # This permission is used to group all permissions that allow executing commands for other players.
+    description: Permission to execute commands for other players.
+    children:
+      tidefly.cmd.on.others: true
+      tidefly.cmd.off.others: true
+      tidefly.cmd.toggle.others: true
+      tidefly.cmd.status.others: true
+      tidefly.cmd.help.others: true
+      tidefly.cmd.speed.others: true
+      tidefly.cmd.pay.others: true
+
+default-perm: false

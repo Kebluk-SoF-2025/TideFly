@@ -17,6 +17,11 @@ flexible controls and network-wide data storage.
 - Bypass flight time restrictions.
 - Set daily flight time bonuses for players.
 
+### Safety Features
+
+- Fall damage protection when flight time expires.
+- Advance notification before flight time runs out.
+
 ### Data & Customization
 
 - Store flight data in a database for network-wide synchronization.
@@ -30,14 +35,14 @@ flexible controls and network-wide data storage.
 
 ## Installation
 
-1. Download the latest release from [Releases](https://github.com/Kebluk-SoF-2025/TideFly/releases/latest).
+1. Download the latest release from [Releases](https://github.com/Kebluk-SoM-2025/TideFly/releases/latest).
 2. Place the downloaded `.jar` file into your server's `plugins` folder.
 3. Restart your server.
 4. Configure the plugin using `config.yml` and language files (such as `en_US.yml`) for messages in the plugin's folder.
-5. Visit the [Wiki](https://github.com/Kebluk-SoF-2025/TideFly/wiki) for more detailed setup instructions and
+5. Visit the [Wiki](https://github.com/Kebluk-SoM-2025/TideFly/wiki) for more detailed setup instructions and
    configuration options.
 
 ## License
 
 TideFly is licensed under the GNU General Public License v3.0. See
-the [LICENSE](https://github.com/Kebluk-SoF-2025/TideFly/blob/main/LICENSE) file for details.
+the [LICENSE](LICENSE.txt) file for details.

@@ -7,7 +7,7 @@
 # |                                          |_| |_|\__,_|\___|_|   |_|\__, |                                        | #
 # |                                                                    |___/                                         | #
 # |                                                                                                                  | #
-# |                              WIKI: https://github.com/Kebluk-SoF-2025/TideFly/wiki                               | #
+# |                              WIKI: https://github.com/Kebluk-SoM-2025/TideFly/wiki                               | #
 # |                                                                                                                  | #
 # |                 This file uses MiniMessage for formatting. You can find the documentation here:                  | #
 # |                                 https://docs.advntr.dev/minimessage/format.html                                  | #
@@ -25,8 +25,13 @@ general:
   lang: en_US
 
   # If this is true, TideFly will try to use the player's language. The lang specified upper will be used for fallback.
-  # Make sure that the language file exists in the "lang" folder.
+  # Make sure that the language file exists in the "locale" folder.
   localization: true
+
+  # You can define custom alias for command here.
+  command-aliases:
+    - fly
+    - tfly
 
 
 # +------------------------------------------------------+ #

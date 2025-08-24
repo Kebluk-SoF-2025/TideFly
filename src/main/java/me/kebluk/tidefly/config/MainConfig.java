@@ -16,7 +16,9 @@
 
 package me.kebluk.tidefly.config;
 
-public record MainConfig(String lang, boolean localization,
+import java.util.List;
+
+public record MainConfig(String lang, boolean localization, List<String> commandAliases,
 
                          String storageType, String storageHost, String storageDatabase, String storageUsername,
                          String storagePassword, String storageFile,

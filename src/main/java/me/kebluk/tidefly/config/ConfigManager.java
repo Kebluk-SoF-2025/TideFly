@@ -27,7 +27,9 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -52,49 +54,8 @@ public class ConfigManager {
     }
 
     public void loadConfigs() {
-        keys();
-//        loadConfig();
-//        loadLocales();
-    }
-
-    @SuppressWarnings("unchecked")
-    private void collectAllKeys(final Map<String, Object> map, final String prefix, final Set<String> result) {
-        for (final Map.Entry<String, Object> entry : map.entrySet()) {
-            final String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
-            result.add(key);
-
-            if (entry.getValue() instanceof Map) {
-                collectAllKeys((Map<String, Object>) entry.getValue(), key, result);
-            }
-        }
-    }
-
-    private void keys() {
-        // Print keys from default config
-        long milis = System.currentTimeMillis();
-        try (final InputStream input = getResource(CONFIG_PATH)) {
-            final Map<String, Object> yamlMap = new Yaml().load(input);
-            final Set<String> allKeys = new HashSet<>();
-            collectAllKeys(yamlMap, "", allKeys);
-            plugin.getSLF4JLogger().info("Default config keys: {}", String.join(", ", allKeys));
-        } catch (final Exception e) {
-            throw new RuntimeException("Failed to extract '" + relativize(CONFIG_PATH) + "'.", e);
-        }
-        plugin.getSLF4JLogger().info("Default took {} ms", System.currentTimeMillis() - milis);
-
-        // Print keys from user config
-        milis = System.currentTimeMillis();
-        try {
-            final Map<String, Object> yamlMap = new Yaml().load(Files.newInputStream(CONFIG_PATH));
-            final Set<String> allKeys = new HashSet<>();
-            collectAllKeys(yamlMap, "", allKeys);
-            plugin.getSLF4JLogger().info("User config keys: {}", String.join(", ", allKeys));
-        } catch (final Exception e) {
-            throw new RuntimeException("Failed to load user config '" + relativize(CONFIG_PATH) + "'.", e);
-        }
-        plugin.getSLF4JLogger().info("User's took {} ms", System.currentTimeMillis() - milis);
-        plugin.getSLF4JLogger().info("Shutting down for inspection...");
-        plugin.getServer().shutdown();
+        loadConfig();
+        loadLocales();
     }
 
     /**

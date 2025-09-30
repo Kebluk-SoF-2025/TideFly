@@ -28,6 +28,12 @@ fly-already-disabled: "<red>Fly mode is already disabled!"
 # |                     Command Help                     | #
 # +------------------------------------------------------+ #
 
+fly-on: "/fly on - Enables fly mode."
+fly-off: "/fly off - Disables fly mode."
+fly-toggle: "/fly toggle - Toggles fly mode."
+fly-help: "/fly help - Displays this help message."
+fly-speed: "/fly speed <speed> - Sets your fly speed (0.1 to 10)."
+fly-pay: "/fly pay <player> <amount> - Gives another player you fly time."
 
 
 # !!! DO NOT TOUCH THIS !!! #

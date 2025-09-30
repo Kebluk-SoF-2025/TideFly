@@ -103,12 +103,16 @@ public class FlyCommand {
                 .then(Commands.literal("help")
                         .requires(source -> source.getSender().hasPermission("tidefly.cmd.help"))
                         .executes(ctx -> {
-                            return Command.SINGLE_SUCCESS;
+                            return literalHelp(ctx);
                         })
                         .then(Commands.argument("player", ArgumentTypes.player())
                                 .requires(source -> source.getSender().hasPermission("tidefly.cmd.help.others"))
                                 .executes(ctx -> {
-                                    return Command.SINGLE_SUCCESS;
+                                    final PlayerSelectorArgumentResolver playerResolver = ctx.getArgument("player", PlayerSelectorArgumentResolver.class);
+                                    final Player player = playerResolver.resolve(ctx.getSource()).getFirst();
+
+                                    // Executes the logic just as the player argument would be the executor
+                                    return literalHelp(ctx.copyFor(copySourceForExecutor(ctx.getSource(), player)));
                                 })
                         )
                 )
@@ -294,8 +298,11 @@ public class FlyCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void literalHelp() {
+    private static byte literalHelp(final CommandContext<CommandSourceStack> ctx) {
+        final Player player = (Player) ctx.getSource().getExecutor();
+        
 
+        return Command.SINGLE_SUCCESS;
     }
 
     private static void argumentSpeed() {
